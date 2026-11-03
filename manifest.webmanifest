@@ -1,0 +1,10 @@
+{
+  "name": "Truck ETA Pro",
+  "short_name": "Truck ETA",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#101827",
+  "description": "Offline truck ETA and driver hours calculator"
+}

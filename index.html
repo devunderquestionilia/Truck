@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Truck ETA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Truck ETA Pro</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#131e30;--panel2:#1b2940;--line:#2b3a52;--txt:#f3f6fb;--muted:#a9b7ca;--accent:#69d6a5;--blue:#79aaff;--danger:#ff8989}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 14px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:760px;margin:auto}.top{padding:22px 4px 14px}.top h1{font-size:25px;margin:0 0 4px;letter-spacing:.3px}.top p,.hint{color:var(--muted);font-size:13px;margin:0}.pill{display:inline-block;border:1px solid #2c7659;color:var(--accent);border-radius:99px;padding:4px 9px;font-size:11px;margin-top:9px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:16px;margin:12px 0}.card h2{font-size:16px;margin:0 0 13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}input,select{width:100%;background:#0d1727;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:12px;font:inherit;min-height:46px}input:focus,select:focus{outline:2px solid var(--blue);border-color:transparent}.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{display:flex;align-items:center;gap:9px;background:#0d1727;padding:11px;border-radius:10px;color:var(--txt);font-size:13px}.check input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}button{border:0;border-radius:12px;padding:13px 15px;font:600 15px system-ui;cursor:pointer}.primary{width:100%;background:var(--accent);color:#092116;margin:5px 0}.secondary{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}.danger{background:#40232a;color:#ffc3c3}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.result{display:none;border-color:#34765c}.result.show{display:block}.eta{font-size:clamp(25px,7vw,36px);font-weight:750;color:var(--accent);margin:4px 0 12px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#0d1727;padding:12px;border-radius:11px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{font-size:19px}.saved-item{border-top:1px solid var(--line);padding:12px 0}.saved-item:first-child{border:0}.saved-item strong{display:block}.saved-item small{color:var(--muted)}.tiny{font-size:11px;color:var(--muted);line-height:1.5}.error{color:var(--danger);font-size:13px;display:none;margin:8px 0}.footer{color:var(--muted);font-size:11px;line-height:1.5;padding:8px 4px 22px}
+@media(max-width:390px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.checks{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+<h1>TRUCK ETA PRO</h1><p>Driver hours · Route planning · Offline trip history</p>
+<span class="pill" id="connection">OFFLINE-READY</span>
+</header>
+
+<section class="card">
+<h2>1. Departure & route</h2>
+<div class="grid">
+<div class="field"><label for="departDate">Departure date</label><input id="departDate" type="date"></div>
+<div class="field"><label for="departTime">Departure time</label><input id="departTime" type="time" value="08:00"></div>
+<div class="field"><label for="distance">Total route distance (km)</label><input id="distance" type="number" min="1" step="1" value="1300"></div>
+<div class="field"><label for="speed">Average driving speed (km/h)</label><input id="speed" type="number" min="1" step="1" value="65"></div>
+<div class="field"><label for="stops">Intermediate unloading stops</label><input id="stops" type="number" min="0" step="1" value="1"></div>
+<div class="field"><label for="unload">Unloading time per stop</label><select id="unload"><option value="0.5">30 minutes</option><option value="1">1 hour</option><option value="1.5">1.5 hours</option><option value="2" selected>2 hours</option><option value="3">3 hours</option><option value="4">4 hours</option><option value="5">5 hours</option></select></div>
+<div class="field full"><label for="loading">Loading time before departure</label><select id="loading"><option value="0">No loading</option><option value="1" selected>1 hour</option><option value="2">2 hours</option><option value="3">3 hours</option><option value="4">4 hours</option><option value="5">5 hours</option></select></div>
+</div>
+<p class="tiny">Distance is divided evenly between the destination and intermediate stops. Loading is added before driving; unloading is added at each intermediate stop.</p>
+</section>
+
+<section class="card">
+<h2>2. Driver rules</h2>
+<div class="grid">
+<div class="field"><label for="dailyDrive">Daily driving limit</label><select id="dailyDrive"><option value="9">9 hours</option><option value="10" selected>10 hours</option></select></div>
+<div class="field"><label for="dailyRest">Daily rest</label><select id="dailyRest"><option value="9" selected>9 hours</option><option value="11">11 hours</option></select></div>
+<div class="field"><label for="breakAfter">Driving before break</label><select id="breakAfter"><option value="4.5" selected>4h 30m</option></select></div>
+<div class="field"><label for="breakMinutes">Break duration</label><select id="breakMinutes"><option value="45" selected>45 minutes</option></select></div>
+<div class="field"><label for="usedToday">Driving already used today (hours)</label><input id="usedToday" type="number" min="0" max="10" step=".25" value="0"></div>
+<div class="field"><label for="sinceBreak">Driving since last qualifying break (hours)</label><input id="sinceBreak" type="number" min="0" max="4.5" step=".25" value="0"></div>
+</div>
+<p class="tiny">The calculator starts with the remaining daily and 4h30 driving allowance you enter. Use 0 if the driver starts fresh.</p>
+</section>
+
+<section class="card">
+<h2>3. Additional pauses</h2>
+<div class="checks">
+<label class="check"><input type="checkbox" id="border"> Border delay — 1h</label>
+<label class="check"><input type="checkbox" id="traffic"> Traffic delay — 1h</label>
+<label class="check"><input type="checkbox" id="fuel"> Fuel stop — 30m</label>
+<label class="check"><input type="checkbox" id="customOn"> Custom pause</label>
+</div>
+<div class="grid" style="margin-top:12px">
+<div class="field"><label for="customHours">Custom pause duration (hours)</label><input id="customHours" type="number" min="0" step=".25" value="0"></div>
+<div class="field"><label for="pausePlacement">Pause placement</label><select id="pausePlacement"><option value="route" selected>During route (after loading)</option><option value="end">At the end of route</option></select></div>
+</div>
+</section>
+
+<button class="primary" id="calculate">CALCULATE ARRIVAL</button>
+<p class="error" id="error"></p>
+
+<section class="card result" id="result">
+<h2>Estimated arrival</h2><div class="eta" id="arrival">—</div><p class="hint" id="arrivalMeta"></p>
+<div class="stats" id="stats"></div>
+<div class="actions" style="margin-top:13px"><button class="secondary" id="save">Save calculation</button><button class="secondary" id="copy">Copy report</button></div>
+</section>
+
+<section class="card">
+<h2>4. KM ↔ driving time</h2>
+<div class="grid">
+<div class="field"><label for="kmCalc">Distance (km)</label><input id="kmCalc" type="number" min="0" value="500"></div>
+<div class="field"><label for="speedCalc">Average speed (km/h)</label><input id="speedCalc" type="number" min="1" value="65"></div>
+</div>
+<p class="eta" style="font-size:25px;margin:12px 0 0" id="kmResult">7h 42m</p><p class="tiny">Pure driving time only; excludes breaks, rests and stops.</p>
+</section>
+
+<section class="card">
+<h2>5. Saved calculations <span class="hint" id="savedCount"></span></h2>
+<div id="savedList"><p class="hint">No saved calculations yet.</p></div>
+<div class="actions"><button class="secondary" id="export">Export history</button><button class="secondary danger" id="clear">Clear history</button></div>
+</section>
+<p class="footer">All calculations and saved history stay in this browser on this device. Offline use becomes available after the app has been opened once while online and installed/added to the Home Screen. This is an ETA planning aid, not an official tachograph or legal-compliance system. It does not yet model weekly limits, reduced weekly rests, ferry/train exceptions, split breaks, or country-specific rules.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let latest=null;
+const fmtDate=d=>new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
+const num=id=>Number($(id).value);
+function getInputs(){return {
+date:$('departDate').value,time:$('departTime').value,distance:num('distance'),speed:num('speed'),stops:num('stops'),
+unload:num('unload'),loading:num('loading'),daily:num('dailyDrive'),rest:num('dailyRest'),
+breakAfter:num('breakAfter'),breakMinutes:num('breakMinutes'),usedToday:num('usedToday'),sinceBreak:num('sinceBreak'),
+border:$('border').checked,traffic:$('traffic').checked,fuel:$('fuel').checked,customOn:$('customOn').checked,
+customHours:num('customHours'),pausePlacement:$('pausePlacement').value
+};}
+function calculate(x){
+const errors=[];
+if(!x.date||!x.time)errors.push('Select a departure date and time.');
+if(!(x.distance>0)||!(x.speed>0))errors.push('Distance and speed must be greater than zero.');
+if(!Number.isInteger(x.stops)||x.stops<0)errors.push('Stops must be a whole number of 0 or more.');
+if(x.usedToday<0||x.usedToday>=x.daily)errors.push('Driving already used today must be less than the daily limit.');
+if(x.sinceBreak<0||x.sinceBreak>=x.breakAfter)errors.push('Driving since last break must be less than 4h30.');
+if(x.customOn&&x.customHours<0)errors.push('Custom pause cannot be negative.');
+if(errors.length)throw new Error(errors.join(' '));
+const start=new Date(`${x.date}T${x.time}:00`);
+if(Number.isNaN(start.getTime()))throw new Error('Invalid departure date/time.');
+let t=new Date(start),drive=0,breaks=0,rests=0,unloading=0,other=0;
+const add=h=>{t=new Date(t.getTime()+h*3600000)};
+add(x.loading); other+=x.loading;
+const extra=(x.border?1:0)+(x.traffic?1:0)+(x.fuel?.5:0)+(x.customOn?x.customHours:0);
+const addBreak=()=>{add(x.breakMinutes/60);breaks+=x.breakMinutes/60;since=0;};
+let dailyUsed=x.usedToday, since=x.sinceBreak;
+const pauseNow=()=>{if(extra>0){add(extra);other+=extra;}};
+if(x.pausePlacement==='route')pauseNow();
+const legs=x.stops+1, legKm=x.distance/legs;
+for(let leg=0;leg<legs;leg++){
+ let remaining=legKm;
+ while(remaining>0.000001){
+   if(dailyUsed>=x.daily-0.000001){add(x.rest);rests+=x.rest;dailyUsed=0;since=0;continue;}
+   if(since>=x.breakAfter-0.000001){addBreak();continue;}
+   const hours=Math.min(remaining/x.speed,x.daily-dailyUsed,x.breakAfter-since);
+   if(hours<=0)throw new Error('Could not advance trip. Check driver-hour inputs.');
+   add(hours);drive+=hours;dailyUsed+=hours;since+=hours;remaining-=hours*x.speed;
+ }
+ if(leg<x.stops){add(x.unload);unloading+=x.unload;}
+}
+if(x.pausePlacement==='end')pauseNow();
+return {start,arrival:t,distance:x.distance,drive,breaks,rests,unloading,other,total:(t-start)/3600000,inputs:x};
+}
+function hours(v){let m=Math.round(v*60);return `${Math.floor(m/60)}h ${m%60}m`;}
+function render(r){
+latest=r;$('result').classList.add('show');$('arrival').textContent=fmtDate(r.arrival);
+$('arrivalMeta').textContent=`Departure ${fmtDate(r.start)} · ${r.distance.toLocaleString()} km route`;
+const rows=[['Driving time',hours(r.drive)],['45-minute breaks',hours(r.breaks)],['Daily rests',hours(r.rests)],['Loading + other pauses',hours(r.other)],['Unloading',hours(r.unloading)],['Total elapsed',hours(r.total)]];
+$('stats').innerHTML=rows.map(([a,b])=>`<div class="stat"><small>${a}</small><strong>${b}</strong></div>`).join('');
+}
+function refreshSaved(){
+let arr=JSON.parse(localStorage.getItem('truckEtaHistory')||'[]');
+$('savedCount').textContent=`(${arr.length})`;
+$('savedList').innerHTML=arr.length?arr.map((v,i)=>`<div class="saved-item"><strong>${v.arrival}</strong><small>${v.distance} km · ${v.total} total · saved ${v.saved}</small><div class="actions" style="margin-top:7px"><button class="secondary" data-load="${i}">Load inputs</button><button class="secondary danger" data-delete="${i}">Delete</button></div></div>`).join(''):'<p class="hint">No saved calculations yet.</p>';
+}
+function report(r){return `TRUCK ETA REPORT\nDeparture: ${fmtDate(r.start)}\nArrival: ${fmtDate(r.arrival)}\nDistance: ${r.distance} km\nDriving: ${hours(r.drive)}\nBreaks: ${hours(r.breaks)}\nDaily rests: ${hours(r.rests)}\nUnloading: ${hours(r.unloading)}\nLoading and other pauses: ${hours(r.other)}\nTotal elapsed: ${hours(r.total)}`;}
+$('calculate').addEventListener('click',()=>{try{$('error').style.display='none';render(calculate(getInputs()));}catch(e){$('error').textContent=e.message;$('error').style.display='block';$('result').classList.remove('show');}});
+$('save').addEventListener('click',()=>{if(!latest)return;let arr=JSON.parse(localStorage.getItem('truckEtaHistory')||'[]');arr.unshift({inputs:latest.inputs,arrival:fmtDate(latest.arrival),distance:latest.distance,total:hours(latest.total),saved:fmtDate(new Date())});localStorage.setItem('truckEtaHistory',JSON.stringify(arr.slice(0,50)));refreshSaved();});
+$('copy').addEventListener('click',async()=>{if(!latest)return;try{await navigator.clipboard.writeText(report(latest));$('copy').textContent='Copied!';setTimeout(()=>$('copy').textContent='Copy report',1500);}catch(e){alert(report(latest));}});
+$('savedList').addEventListener('click',e=>{let i=e.target.dataset.load??e.target.dataset.delete;if(i===undefined)return;let arr=JSON.parse(localStorage.getItem('truckEtaHistory')||'[]');if(e.target.dataset.delete!==undefined){arr.splice(Number(i),1);localStorage.setItem('truckEtaHistory',JSON.stringify(arr));refreshSaved();return;}let x=arr[Number(i)].inputs;Object.entries(x).forEach(([k,v])=>{let el=$(k);if(!el)return;if(el.type==='checkbox')el.checked=v;else el.value=v;});window.scrollTo({top:0,behavior:'smooth'});});
+$('clear').addEventListener('click',()=>{if(confirm('Delete all saved calculations from this device?')){localStorage.removeItem('truckEtaHistory');refreshSaved();}});
+$('export').addEventListener('click',()=>{let data=localStorage.getItem('truckEtaHistory')||'[]';let blob=new Blob([data],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='truck-eta-history.json';a.click();URL.revokeObjectURL(a.href);});
+function kmUpdate(){let k=num('kmCalc'),s=num('speedCalc');$('kmResult').textContent=k>=0&&s>0?hours(k/s):'—';}
+$('kmCalc').addEventListener('input',kmUpdate);$('speedCalc').addEventListener('input',kmUpdate);
+$('departDate').value=new Date().toISOString().slice(0,10);refreshSaved();kmUpdate();
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+if(navigator.onLine){$('connection').textContent='ONLINE · OFFLINE READY';}else{$('connection').textContent='OFFLINE MODE';}
+window.addEventListener('online',()=>$('connection').textContent='ONLINE · OFFLINE READY');
+window.addEventListener('offline',()=>$('connection').textContent='OFFLINE MODE');
+</script>
+</body></html>
